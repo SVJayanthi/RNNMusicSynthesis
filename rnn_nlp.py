@@ -14,6 +14,7 @@ import time
 import music21
 
 from vocab import MusicVocab
+from decode import *
 
 BPB = 4 # beats per bar
 TIMESIG = f'{BPB}/4' # default time signature
@@ -152,6 +153,9 @@ def build_model(vocab_size, embedding_dim, rnn_units, batch_size):
   ])
   return model
 
+def loss(labels, logits):
+  return tf.keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
+
 if __name__ == '__main__':
     midi_file = "bwv772.mid"
     stream = file_stream(midi_file)
@@ -172,6 +176,8 @@ if __name__ == '__main__':
     seq_length = 100
     examples_per_epoch = len(idxenc)//(seq_length+1)
     
+    print(idxenc.size)
+    print(idxenc.shape)
     # Create training examples / targets
     char_dataset = tf.data.Dataset.from_tensor_slices(idxenc)
     sequences = char_dataset.batch(seq_length+1, drop_remainder=True)
@@ -183,28 +189,31 @@ if __name__ == '__main__':
         for i in item.numpy():
             print(vocab.itos[i])
       #print(repr(''.join(vocab.itos[item.numpy()])))
+    """
+    dataset = sequences.map(lambda x: (x[:-1], x[1:]))
     
+    """
     for input_example, target_example in  dataset.take(1):
         print ('Input data: ', input_example.numpy())
         print ('Target data:', target_example.numpy())
-"""
-    dataset = sequences.map(split_input_target)
-    
+    """
     # Batch size
-    BATCH_SIZE = 64
+    BATCH_SIZE = 17
     
     # Buffer size to shuffle the dataset
     BUFFER_SIZE = 10000
     
     dataset = dataset.shuffle(BUFFER_SIZE)
-    
-    dataset = dataset.batch(BATCH_SIZE, drop_remainder=False).filter(lambda features, labels: tf.equal(tf.shape(labels)[0], BATCH_SIZE))
+    dataset = dataset.batch(BATCH_SIZE, drop_remainder=False)
     print(dataset)
     
+    """
     for input_example, target_example in  dataset.take(1):
+        print('enter loop')
         print ('Input data: ', input_example.numpy())
         print ('Target data:', target_example.numpy())
-        
+    """
+    
     # The embedding dimension
     embedding_dim = 256
     
@@ -214,12 +223,42 @@ if __name__ == '__main__':
     model = build_model(vocab_size = len(vocab.itos), embedding_dim=embedding_dim,
                         rnn_units=rnn_units, batch_size=BATCH_SIZE)    
     
-    for input_example_batch, target_example_batch in dataset.take(1):
-      example_batch_predictions = model(input_example_batch)
-      print(example_batch_predictions.shape, "# (batch_size, sequence_length, vocab_size)")
-        
     print(model.summary())
     
+    example_batch_predictions = None
+    input_batch = None
+    target_batch = None
+    for input_example_batch, target_example_batch in dataset.take(1):
+        example_batch_predictions = model(input_example_batch)
+        input_batch = input_example_batch
+        target_batch = target_example_batch
+        print(example_batch_predictions.shape, "# (batch_size, sequence_length, vocab_size)")
     
-    #sampled_indices = tf.random.categorical(example_batch_predictions[0], num_samples=1)
-    #sampled_indices = tf.squeeze(sampled_indices,axis=-1).numpy()
+
+    sampled_indices = tf.random.categorical(example_batch_predictions[0], num_samples=1)
+    sampled_indices = tf.squeeze(sampled_indices,axis=-1).numpy()
+    
+    print(idxenc2npenc(input_batch[0].numpy(), vocab))
+    print("predicted values")
+    print(idxenc2npenc(sampled_indices, vocab))
+    
+    example_batch_loss  = loss(target_batch, example_batch_predictions)
+    print("Prediction shape: ", example_batch_predictions.shape, " # (batch_size, sequence_length, vocab_size)")
+    print("scalar_loss:      ", example_batch_loss.numpy().mean())
+    
+    model.compile(optimizer='adam', loss=loss)
+    
+    # Directory where the checkpoints will be saved
+    checkpoint_dir = './training_checkpoints'
+    # Name of the checkpoint files
+    checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt_{epoch}")
+    
+    checkpoint_callback=tf.keras.callbacks.ModelCheckpoint(
+        filepath=checkpoint_prefix,
+        save_weights_only=True)
+    
+    EPOCHS=10
+    
+    history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
+    
+    
