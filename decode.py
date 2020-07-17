@@ -17,7 +17,7 @@ SAMPLE_FREQ = 4
 
 def idxenc2stream(arr, vocab, bpm=120):
     "Converts index encoding to music21 stream"
-    npenc = idxenc2npenc(arr, vocab)
+    npenc = idxenc2npenc(np.array(arr), vocab)
     return npenc2stream(npenc, bpm=bpm)
 
 def idxenc2npenc(t, vocab, validate=True):

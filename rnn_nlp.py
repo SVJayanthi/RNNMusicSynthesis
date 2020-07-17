@@ -261,4 +261,52 @@ if __name__ == '__main__':
     
     history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
     
+    model = build_model(len(vocab.itos), embedding_dim, rnn_units, batch_size=1)
+
+    model.load_weights(tf.train.latest_checkpoint(checkpoint_dir))
     
+    model.build(tf.TensorShape([1, None]))
+    
+    print(model.summary()) 
+    
+    # Evaluation step (generating text using the learned model)
+
+    # Number of characters to generate
+    num_generate = 1000
+      
+    # Converting our start string to numbers (vectorizing)
+    input_eval = idxenc[:10]
+    input_eval = tf.expand_dims(input_eval, 0)
+      
+    # Empty string to store our results
+    music_generated = []
+      
+    # Low temperatures results in more predictable text.
+    # Higher temperatures results in more surprising text.
+    # Experiment to find the best setting.
+    temperature = 1.0
+      
+    # Here batch size == 1
+    model.reset_states()
+    for i in range(num_generate):
+        predictions = model(input_eval)
+        # remove the batch dimension
+        predictions = tf.squeeze(predictions, 0)
+      
+        # using a categorical distribution to predict the character returned by the model
+        predictions = predictions / temperature
+        predicted_id = tf.random.categorical(predictions, num_samples=1)[-1,0].numpy()
+      
+        # We pass the predicted character as the next input to the model
+        # along with the previous hidden state
+        input_eval = tf.expand_dims([predicted_id], 0)
+      
+        print(predicted_id)
+        print(len(vocab.itos))
+        print(idxenc2npenc(np.array([predicted_id]), vocab))
+        music_generated.append(predicted_id)
+      
+    print(music_generated)
+    
+    generated_stream = idxenc2stream(music_generated, vocab)
+    generated_stream.write('midi', 'generated/synthesized_song.mid')
