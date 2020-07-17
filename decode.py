@@ -7,12 +7,7 @@ Created on Sat Jul 11 14:27:19 2020
 
 import music21
 import numpy as np
-
-BPB = 4 # beats per bar
-TIMESIG = f'{BPB}/4' # default time signature
-NOTE_SIZE = 128
-VALTSEP = -1 # separator value for numpy encoding
-SAMPLE_FREQ = 4
+from vocab import *
 
 
 def idxenc2stream(arr, vocab, bpm=120):
@@ -38,6 +33,11 @@ def to_valid_idxenc(t, valid_range):
     return t
 
 def to_valid_npenc(t):
+    t = t[np.where((t[:, 0] >= VALTSEP) & (t[:, 0] < NOTE_SIZE) & (t[:, 1] >= 0))]
+    
+    return t
+"""
+def to_valid_npenc(t):
     is_note = (t[:, 0] < VALTSEP) | (t[:, 0] >= NOTE_SIZE)
     invalid_note_idx = is_note.argmax()
     invalid_dur_idx = (t[:, 1] < 0).argmax()
@@ -48,7 +48,7 @@ def to_valid_npenc(t):
         print('Non midi note detected. Only returning valid portion. Index, seed', invalid_idx, t.shape)
         return t[:invalid_idx]
     return t
-
+"""
 
 # Decoding process
 # 1. NoteEnc -> numpy chord array
