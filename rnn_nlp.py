@@ -8,17 +8,18 @@ Created on Sun Jun 14 19:43:43 2020
 import tensorflow as tf
 
 import os
+import numpy as np
 
 from vocab import MusicVocab
 from decode import idxenc2stream
 from encode import file2idxenc
 
 # Train model
-TRAIN = False
+TRAIN = True
 # Max Sequence Length
 SEQ_LENGTH = 100
 # Batch size
-BATCH_SIZE = 17
+BATCH_SIZE = 64
 # Buffer size to shuffle the dataset
 BUFFER_SIZE = 10000
 # The embedding dimension
@@ -28,7 +29,7 @@ RNN_UNITS = 1024
 # Iterations to Train
 EPOCHS=10
 # Number of notes to generate
-NUM_GENERATE = 1000
+NUM_GENERATE = 1500
 # Predictability of generated output
 TEMPERATURE = 1.0
 
@@ -68,20 +69,41 @@ def loss(labels, logits):
   return tf.keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
 
 if __name__ == '__main__':
-    midi_file = "music/bwv772.mid"
     vocab = MusicVocab.create()
-    idxenc = file2idxenc(midi_file, vocab)
     
-    examples_per_epoch = len(idxenc)//(SEQ_LENGTH+1)
+    sample_files = []
+    sample_dir = "music/sample/"   
+    for file_name in os.listdir(sample_dir):
+        if file_name.endswith('.mid') or file_name.endswith('.midi'):
+            sample_files.append(file_name)
     
-    print("Input length: ", idxenc.size)
+    train_files = []
+    train_dir = "music/"   
+    for file_name in os.listdir(train_dir):
+        if file_name.endswith('.mid') or file_name.endswith('.midi'):
+            train_files.append(file_name)
+            
+    idxenc_sample = []
+    for music_file in sample_files:
+        idxenc_sample.extend(file2idxenc(sample_dir + music_file, vocab))
+        
+    idxenc_data = []
+    for music_file in train_files:
+        idxenc_data.extend(file2idxenc(train_dir + music_file, vocab))
+    idxenc_sample = np.array(idxenc_sample)
+    idxenc_data = np.array(idxenc_data)
+    
+    
+    examples_per_epoch = len(idxenc_data)//(SEQ_LENGTH+1)
+    
+    print("Input length: ", idxenc_data.size)
     
     # Directory where the checkpoints will be saved
     checkpoint_dir = './training_checkpoints'
     
     if (TRAIN):
         # Create training examples / targets
-        char_dataset = tf.data.Dataset.from_tensor_slices(idxenc)
+        char_dataset = tf.data.Dataset.from_tensor_slices(idxenc_data)
         sequences = char_dataset.batch(SEQ_LENGTH+1, drop_remainder=True)
         
         dataset = sequences.map(lambda x: (x[:-1], x[1:]))
@@ -115,8 +137,9 @@ if __name__ == '__main__':
     print(model.summary()) 
     
     # Converting our start string to numbers (vectorizing)
-    input_eval = idxenc[:10]
-    input_eval = tf.expand_dims(input_eval, 0)
+    sample_index = int(len(idxenc_sample) / 3)
+    input_eval_idx = idxenc_sample[:sample_index]
+    input_eval = tf.expand_dims(input_eval_idx, 0)
       
     # Empty string to store our results
     music_generated = []
@@ -138,5 +161,7 @@ if __name__ == '__main__':
       
         music_generated.append(predicted_id)
     
-    generated_stream = idxenc2stream(music_generated, vocab)
-    generated_stream.write('midi', fp='./generated/synthesized_song.mid')
+    predict_sample = input_eval_idx.tolist()
+    predict_sample.extend(music_generated)
+    generated_stream = idxenc2stream(predict_sample, vocab)
+    generated_stream.write('midi', fp=('./generated/synthesized_' + sample_files[0].replace('.mid', '') + '.mid'))
