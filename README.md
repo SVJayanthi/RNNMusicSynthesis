@@ -3,7 +3,7 @@
 ## Author
 Sravan Jayanthi
 
-## Music Sythesis Machine Learning Model
+## Music Synthesis Machine Learning Model
 The goal is to create a machine learning model that can generate near-authentic classical music. This model is designed utilizing Recurrent Neural Networks as the first iteration in a series of different models to be tested to accomplish the goal. This model preprocesses the wave based input in the form of midi files and encodes it based on the duration and chord of the notes being played. Then, the music derived data is organized into batches to be used to train the Recurrent Nerual Network model so that given a sequence of priming notes, it can generate a realistic sequence of chords that form into a melodic song. The newly created music is then decoded so that the encoding utilized in the model are translated back into their representative oscillating musical notes.
 
 
