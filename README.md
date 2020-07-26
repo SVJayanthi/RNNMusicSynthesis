@@ -16,7 +16,7 @@ This project contains a model training script and a music prediction script alon
 | `predict.py` | Generate sequence of music |
 | `vocab.py` | Parameters for encoding |
 | `encode.py` | Codify the musical notes |
-| `decode.py` | Translate back to noes |
+| `decode.py` | Translate back to notes |
 | `music/` | Classical music input |
 | `generated/` | Synthesized music output |
 | `training_checkpoints/` | Trained model weights |
