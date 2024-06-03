@@ -107,7 +107,7 @@ def split_dataset(dataset, val_split=0.1, test_split=0.1):
 
 def build_arg_parser():    
     parser = argparse.ArgumentParser(description="Train Music Synthesis Model")
-    # parser.add_argument("-d", "--dir" type=str, help="Directory of files", required=True)
+    parser.add_argument("-d", "--dir" type=str, help="Directory of files", required=True)
     parser.add_argument("-m", "--model", default=["gru"], type=str, nargs="+", help="Type of models options: gru, lstm, transformer", required=False)
     return parser.parse_args()
 
@@ -118,10 +118,7 @@ if __name__ == '__main__':
     print(args)
     
     models = args.model
-    
-    # train_dir = "C:/Users/srava/Documents/Interview Coding + Design/RNNMusicSynthesis/maestro-v3.0.0" 
-    train_dir = "C:/Users/srava/Documents/Interview Coding + Design/RNNMusicSynthesis/2018_small" 
-    # train_dir = "C:/Users/srava/Documents/Interview Coding + Design/RNNMusicSynthesis/2018_medium" 
+    train_dir = args.dir
     
     vocab = MusicVocab.create()
     
