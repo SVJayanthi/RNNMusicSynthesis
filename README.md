@@ -42,7 +42,7 @@ Use the given conda environment export in `environment.yml`
 ## Dataset
 Notes about the dataset which can be found [here](https://magenta.tensorflow.org/datasets/maestro):
 - 1276 files, 300gb of compressed audio data
-- 1.8 mil tokens 
+- 20.6 mil tokens 
 
 Architecture Parameters
 - 312 Vocab size w/ Note toks, Duration toks, Tempo toks, Special toks

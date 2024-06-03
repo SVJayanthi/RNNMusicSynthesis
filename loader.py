@@ -40,7 +40,7 @@ def clean_encodings(idxenc_data, vocab):
     assert not np.isnan(idxenc_data).any()
     # Remove invalid tokens
     min_id, max_id = 0, len(vocab.itos)  
-    idxenc_data = idxenc_data[(idxenc_data >= min_id) & (idxenc_data < max_id+1)]
+    idxenc_data = idxenc_data[(idxenc_data >= min_id) & (idxenc_data < max_id)]
     return idxenc_data
 
 def load_files_parallel(directory, vocab,
@@ -76,5 +76,6 @@ def load_files(directory, vocab,
     for music_file in train_files:
         idxenc_data.extend(file2idxenc(music_file, vocab))
     idxenc_data = np.array(idxenc_data)
+    idxenc_data = clean_encodings(idxenc_data, vocab)
     
     return build_dataset(idxenc_data, seq_length, buffer_size, batch_size)
