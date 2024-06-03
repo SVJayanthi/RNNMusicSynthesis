@@ -29,7 +29,7 @@ def stream_chordarr(stream, note_size=NOTE_SIZE, sample_freq=SAMPLE_FREQ, max_no
     note * instrument * pitch
     """
     
-    highest_time = max(stream.flat.getElementsByClass('Note').highestTime, stream.flat.getElementsByClass('Chord').highestTime)
+    highest_time = max(stream.flatten().getElementsByClass('Note').stream().highestTime, stream.flatten().getElementsByClass('Chord').stream().highestTime)
     maxTimeStep = round(highest_time * sample_freq)+1
     score_arr = np.zeros((maxTimeStep, len(stream.parts), NOTE_SIZE))
 
@@ -38,7 +38,7 @@ def stream_chordarr(stream, note_size=NOTE_SIZE, sample_freq=SAMPLE_FREQ, max_no
 
     for idx,part in enumerate(stream.parts):
         notes=[]
-        for elem in part.flat:
+        for elem in part.flatten():
             if isinstance(elem, music21.note.Note):
                 notes.append(note_data(elem.pitch, elem))
             if isinstance(elem, music21.chord.Chord):
