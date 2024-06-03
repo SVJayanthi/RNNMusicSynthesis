@@ -27,9 +27,9 @@ EMBEDDING_DIM = 256
 # Number of RNN units
 RNN_UNITS = 1024
 # Iterations to Train
-EPOCHS = 10
+EPOCHS = 40
 # Learning rate
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0001
 # Random seed to split data
 RANDOM_SEED = 3
 
@@ -107,7 +107,7 @@ def split_dataset(dataset, val_split=0.1, test_split=0.1):
 
 def build_arg_parser():    
     parser = argparse.ArgumentParser(description="Train Music Synthesis Model")
-    parser.add_argument("-d", "--dir" type=str, help="Directory of files", required=True)
+    parser.add_argument("-d", "--dir", type=str, help="Directory of files", required=True)
     parser.add_argument("-m", "--model", default=["gru"], type=str, nargs="+", help="Type of models options: gru, lstm, transformer", required=False)
     return parser.parse_args()
 
