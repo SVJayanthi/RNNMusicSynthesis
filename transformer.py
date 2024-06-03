@@ -1,4 +1,4 @@
-# https://github.com/tensorflow/text/blob/master/docs/tutorials/transformer.ipynb
+# References this from tensorflow docs- https://github.com/tensorflow/text/blob/master/docs/tutorials/transformer.ipynb
 
 import logging
 import time
