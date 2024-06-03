@@ -39,9 +39,24 @@ In order to utilize the machine learning model, a repository of music should be 
 Use the given conda environment export in `environment.yml`
 & follow tensorflow [instructions](https://www.tensorflow.org/guide/gpu) for enabling GPU usage on your machine.
 
+## Dataset
+Notes about the dataset which can be found [here](https://magenta.tensorflow.org/datasets/maestro):
+- 1276 files, 300gb of compressed audio data
+- 1.8 mil tokens 
+
+Architecture Parameters
+- 312 Vocab size w/ Note toks, Duration toks, Tempo toks, Special toks
+- 100 token sequence length 
+- 256-dim embedding size
+
+Training Parameters
+- 256 Batch Size
+- 40 Epochs
+- 0.0001 Learning rate
+- [0.8, 0.1, 0.1]: Train, Validation, Test split
 
 ### Code
-Sample code of predicting notes based off of previously played music.
+Code for predicting notes based off of previously played music using generative random sampling.
 ```python
     predictions = tf.squeeze(predictions, 0)
     predictions = predictions / TEMPERATURE
